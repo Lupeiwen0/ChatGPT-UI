@@ -1,14 +1,13 @@
 {
-  "name": "chat-gpt-demo",
+  "name": "chat-gpt-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "deploy": "vite build && gh-pages -d dist"
   },
-  "homepage": "https://Lupeiwen0.github.io/ChatGPT-UI/",
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
     "@iconify-json/ph": "^1.1.5",
@@ -33,5 +32,7 @@
     "unplugin-icons": "^0.15.3",
     "unplugin-vue-components": "^0.24.1",
     "vite": "^4.1.0"
-  }
+  },
+  "homepage": "https://Lupeiwen0.github.io/ChatGPT-UI/",
+  "keywords": ["ChatGPT", "ChatGPT-UI", "chat-gpt-ui", "ChatGPT-Template", "ChatGPT-Dashboard"]
 }
