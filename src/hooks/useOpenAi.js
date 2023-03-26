@@ -45,13 +45,14 @@ export function useOpenAi({ openSetting }) {
     return true
   }
 
-
   function buildParams() {
-    const messages = [systemInfo.value, ...chatList.value]
+    // 保留8组对话 避免tokens消耗过大,如需加大保留对话组，可更改下面 -17的值，当前计算方式为 -(8 * 2 + 1)
+    const messages = chatList.value.slice(-17)
     return {
       model: modelMap.chat,
-      messages: messages.slice(-16),
+      messages: [systemInfo.value, ...messages],
       stream: isSocket.value,
+      top_p: 1
     };
   }
 
@@ -128,6 +129,8 @@ export function useOpenAi({ openSetting }) {
       })
       .catch((error) => {
         console.error("Connection error", error);
+        ElMessage.error('网络错误')
+        chatList.value[index].content = 'Error'
         pending.value = false;
       });
   }
