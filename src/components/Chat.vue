@@ -1,0 +1,289 @@
+<template>
+  <div class="chat-container">
+    <div class="chat-list">
+      <el-auto-resizer>
+        <template #default="{ height }">
+          <el-scrollbar ref="scrollContainer" :height="height">
+            <div class="welcome-wrapper animate__animated animate__bounceInDown">
+              <span class="title">欢迎使用智能助手</span>
+              <span class="label">由 AI 支持的网页版 Copilot</span>
+            </div>
+            <div class="example-wrapper animate__animated animate__bounceInDown">
+              <div class="item-wrapper">
+                <div class="title">🧐 提出复杂问题</div>
+                <div class="message-card">"我可以为我挑剔的只吃橙色食物的孩子做什么饭?"</div>
+              </div>
+              <div class="item-wrapper">
+                <div class="title">🙌 获取更好的答案</div>
+                <div class="message-card">"销量最高的 3 种宠物吸尘器有哪些优点和缺点?"</div>
+              </div>
+              <div class="item-wrapper">
+                <div class="title">🎨 获得创意灵感</div>
+                <div class="message-card">"以海盗的口吻写一首关于外太空鳄鱼的俳句?"</div>
+              </div>
+            </div>
+            <div class="tips-wrapper animate__animated animate__bounceInDown">
+              让我们一起学习。智能助手由 AI 提供支持，因此可能出现意外和错误。
+            </div>
+
+            <template v-for="item in chatList">
+              <div class="chat-list__item" v-if="item.role !== 'system'">
+                <div class="message-card animate__animated animate__bounceInUp"
+                  :class="{ 'is-right': item.role === 'user' }">
+                  <section class="list-item__text">
+                    <MarkdownIt :model-value="item.content"></MarkdownIt>
+                  </section>
+                </div>
+              </div>
+            </template>
+          </el-scrollbar>
+        </template>
+      </el-auto-resizer>
+    </div>
+
+    <div class="chat-enter animate__animated animate__bounceInUp">
+      <div class="clear-wrapper" :class="{ mini: isMiniClear }" @click="clearHandle">
+        <div class="icon">
+          <i-game-icons-magic-broom />
+        </div>
+        <div class="tips">新对话</div>
+      </div>
+
+      <div class="enter-wrapper">
+        <div class="enter-icon">
+          <i-ph-chat-circle-text-light />
+        </div>
+        <el-input type="textarea" placeholder="有问题尽管问我..." resize="none" maxlength="2000" show-word-limit
+          :autosize="{ minRows: 1 }" v-model="keyword" @focus="focusHandle" @blur="blurHandle"
+          @keydown.enter.prevent="sendMessage"></el-input>
+      </div>
+
+    </div>
+
+    <div class="setting-button animate__animated animate__fadeInRight" @click="openSetting">
+      <el-icon size="18px">
+        <Setting />
+      </el-icon>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useOpenAi } from '@/hooks/useOpenAi'
+import { Setting } from '@element-plus/icons-vue'
+import MarkdownIt from './markdown-it.vue';
+import settingDrawer from './setting-drawer.vue';
+import { useModal } from '@/hooks/useModal'
+
+
+
+function openSetting() {
+  useModal(settingDrawer)
+}
+
+const {
+  scrollContainer,
+  keyword,
+  chatList,
+  sendMessage
+} = useOpenAi({ openSetting })
+
+const isMiniClear = ref(false)
+
+function clearHandle() {
+  chatList.value = chatList.value.filter(i => i.role === 'system')
+}
+
+function focusHandle() {
+  isMiniClear.value = true
+}
+function blurHandle() {
+  isMiniClear.value = false
+}
+
+</script>
+
+<style lang="scss" scoped>
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 800px;
+  max-width: 1200px;
+  height: 100vh;
+  overflow: hidden;
+  padding: 30px;
+  margin: 0 auto;
+  font-size: 16px;
+}
+
+.chat-enter {
+  display: flex;
+  align-items: flex-end;
+
+  .clear-wrapper {
+    display: flex;
+    align-items: center;
+    width: 112px;
+    height: 48px;
+    color: #fff;
+    font-weight: bold;
+    background: linear-gradient(90deg, #2870EA 10.79%, #1B4AEF 87.08%);
+    border-radius: 24px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all .3s;
+    margin-right: 10px;
+
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+
+    }
+
+    .tips {
+      width: max-content;
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    &.mini {
+      width: 48px;
+    }
+  }
+
+  .enter-wrapper {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 24px !important;
+    background-color: #fff;
+    display: flex;
+
+    .enter-icon {
+      width: 24px;
+      margin-top: 3px;
+      font-size: 18px;
+    }
+
+    :deep(.el-textarea__inner) {
+      min-height: auto !important;
+      line-height: 20px;
+      box-shadow: none;
+      background-color: transparent;
+      padding-right: 80px;
+      font-size: 16px;
+    }
+
+    :deep(.el-input__count) {
+      line-height: 20px;
+    }
+  }
+}
+
+.chat-list {
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 40px;
+
+  :deep(.el-scrollbar__view) {
+    padding-right: 20px;
+  }
+
+  :deep(.chat-list__item) {
+    margin-bottom: 20px;
+
+    .message-card {
+      width: max-content;
+      padding: 10px 16px;
+      border-radius: 8px;
+    }
+
+    .is-right {
+      color: #fff;
+      margin-left: auto;
+      background-image: linear-gradient(90deg, #2870EA 10.79%, #1B4AEF 87.08%);
+    }
+
+
+    p,
+    li {
+      line-height: 26px;
+    }
+  }
+}
+
+.welcome-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 12vh;
+
+  .title {
+    color: #111;
+    font-weight: 600;
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .label {
+    font-size: 18px;
+    margin-bottom: 4vh;
+  }
+}
+
+.example-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column-gap: 20px;
+  margin-bottom: 4vh;
+
+  .item-wrapper {
+    flex: 1;
+    text-align: center;
+
+    .title {
+      margin-bottom: 24px;
+    }
+  }
+}
+
+.tips-wrapper {
+  text-align: center;
+  margin-bottom: 4vh;
+}
+
+.message-card {
+  border-radius: 6px;
+  text-align: left;
+  outline: transparent solid 1px;
+  padding: 20px;
+  background-color: #fff;
+  max-width: 100%;
+  font-size: 16px;
+  box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12), 0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
+
+}
+
+.setting-button {
+  position: fixed;
+  right: -1px;
+  top: 6vh;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #2870EA 10.79%, #1B4AEF 87.08%);
+  border-radius: 4px 0 0 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+</style>

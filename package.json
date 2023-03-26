@@ -1,0 +1,37 @@
+{
+  "name": "chat-gpt-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "deploy": "vite build && gh-pages -d dist"
+  },
+  "homepage": "https://Lupeiwen0.github.io/ChatGPT-UI/",
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.1.0",
+    "@iconify-json/ph": "^1.1.5",
+    "@vueuse/core": "^9.13.0",
+    "animate.css": "^4.1.1",
+    "element-plus": "^2.2.33",
+    "highlight.js": "^11.7.0",
+    "lodash-es": "^4.17.21",
+    "markdown-it": "^13.0.1",
+    "openai": "^3.2.1",
+    "pinia": "^2.0.33",
+    "vue": "^3.2.45"
+  },
+  "devDependencies": {
+    "@iconify-json/game-icons": "^1.1.2",
+    "@vitejs/plugin-vue": "^4.0.0",
+    "gh-pages": "^5.0.0",
+    "sass": "^1.58.3",
+    "terser": "^5.16.8",
+    "unplugin-auto-import": "^0.15.2",
+    "unplugin-element-plus": "^0.7.0",
+    "unplugin-icons": "^0.15.3",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.1.0"
+  }
+}
