@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { resolve } from 'path'
 
 import vue from '@vitejs/plugin-vue'
@@ -17,8 +17,8 @@ function pathResolve(dir) {
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   const isBuild = command === 'build';
-  console.log(command, mode);
-
+  const ENV_DATA = loadEnv(mode, process.cwd());
+  console.log(command, mode, ENV_DATA);
 
   const plugins = [
     vue(),
@@ -45,7 +45,7 @@ export default defineConfig(({ command, mode }) => {
   ]
 
   return {
-    base: '/',
+    base: ENV_DATA.VITE_BUILD_PUBLIC_PATH,
 
     // path resolve
     resolve: {
