@@ -13,7 +13,7 @@ export const useSettingStore = defineStore('setting', {
       role: 'system',
       content: 'Act as a personal assistant to resolve the issues raised'
     },
-    apiKey: import.meta.env.VITE_API_KEY ?? (Storage.get(ApiKey) || '')
+    apiKey: import.meta.env.VITE_API_KEY ? import.meta.env.VITE_API_KEY : (Storage.get(ApiKey) || '')
   }),
   actions: {
     setApiKey(key = '') {
