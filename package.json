@@ -34,5 +34,11 @@
     "vite": "^4.1.0"
   },
   "homepage": "https://Lupeiwen0.github.io/ChatGPT-UI/",
-  "keywords": ["ChatGPT", "ChatGPT-UI", "chat-gpt-ui", "ChatGPT-Template", "ChatGPT-Dashboard"]
+  "keywords": [
+    "ChatGPT",
+    "ChatGPT-UI",
+    "chat-gpt-ui",
+    "ChatGPT-Template",
+    "ChatGPT-Dashboard"
+  ]
 }

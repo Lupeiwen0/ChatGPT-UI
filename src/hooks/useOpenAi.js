@@ -1,4 +1,4 @@
-import { ref, nextTick, onMounted, onBeforeMount, reactive } from "vue";
+import { ref, nextTick, onMounted, onBeforeMount } from "vue";
 import { throttle } from "lodash-es";
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from "element-plus";
@@ -22,11 +22,10 @@ async function registerCopyHandel(e) {
 
 export function useOpenAi({ openSetting }) {
   const settingStore = useSettingStore()
-  const { openAiInstance, systemInfo, apiKey, currentModel, chatList } = storeToRefs(settingStore)
+  const { openAiInstance, systemInfo, apiKey, currentModel, chatList, isSocket } = storeToRefs(settingStore)
 
   const pending = ref(false);
   const scrollContainer = ref();
-  const isSocket = ref(true);
   const keyword = ref("");
 
   function checkAuth() {
@@ -51,76 +50,54 @@ export function useOpenAi({ openSetting }) {
     };
   }
 
-  function ApiChat() {
-    pending.value = true;
-
-    const params = buildParams();
-
-    chatList.value.push({ role: "assistant", content: waitLabel });
-    const index = chatList.value.length - 1;
-
-    openAiInstance.value
-      .createChatCompletion(params)
-      .then((res) => {
-        const [response] = res.data.choices;
-        chatList.value[index].content = response.message.content;
-        scrollBottom();
-      })
-      .catch(() => {
-        chatList.value[index].content = "Error";
-      })
-      .finally(() => (pending.value = false));
-  }
-
   function socketApiChat() {
     pending.value = true;
-
+    const Authorization = openAiInstance.value.configuration.baseOptions.headers.Authorization;
     const params = buildParams();
 
     chatList.value.push({ role: "assistant", content: waitLabel });
     const index = chatList.value.length - 1;
 
-    const openAiHeaders = openAiInstance.value.configuration.baseOptions.headers;
-    fetch(openAiInstance.value.basePath + '/chat/completions', {
+    fetch(openAiInstance.value?.basePath + '/chat/completions', {
       method: "POST",
       body: JSON.stringify(params),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: openAiHeaders.Authorization,
-      },
+      headers: { "Content-Type": "application/json", Authorization },
     })
       .then((response) => {
         const stream = response.body;
         const reader = stream.getReader();
-        let buffer = "";
-
-        // 逐行读取数据
-        reader.read().then(function processText({ done, value }) {
-          if (done) return;
-
-          buffer += new TextDecoder().decode(value);
-          const lines = buffer.split("\n");
-
-          // 处理数据流
-          lines.forEach((line) => {
-            if (line.length < 1) return;
-            const value = line.slice(6);
-            if (value === "[DONE]") {
-              pending.value = false;
-              return;
-            }
-            const result = JSON.parse(value);
-
-            const [content] = result.choices;
-            if (waitLabel === chatList.value[index].content) chatList.value[index].content = "";
-
-            chatList.value[index].content += content.delta?.content ?? "";
-            scrollBottom();
+        const decoder = new TextDecoder('utf-8');
+        function readStream() {
+          reader.read().then(({ done, value }) => {
+            if (done) return
+            const text = decoder.decode(value, { stream: true });
+            const lines = text.trim().split('\n');
+            lines.forEach(line => {
+              if (line.length < 1) return;
+              const value = isSocket.value ? line.slice(6) : line
+              if (value === "[DONE]") {
+                pending.value = false;
+                return;
+              }
+              const result = JSON.parse(value);
+              if (isSocket.value) {
+                // 实时
+                const [content] = result.choices;
+                if (waitLabel === chatList.value[index].content) chatList.value[index].content = "";
+                chatList.value[index].content += content.delta?.content ?? "";
+              } else {
+                // 完整
+                const [messageInfo] = result.choices;
+                chatList.value[index].content = messageInfo.message.content;
+                pending.value = false;
+              }
+              scrollBottom();
+            });
+            readStream();
           });
+        };
 
-          buffer = lines.pop();
-          return reader.read().then(processText);
-        });
+        readStream();
       })
       .catch((error) => {
         console.error("Connection error", error);
@@ -155,11 +132,7 @@ export function useOpenAi({ openSetting }) {
     chatList.value.push({ role: "user", content: keyword.value });
     keyword.value = "";
 
-    if (isSocket.value) {
-      socketApiChat();
-    } else {
-      ApiChat();
-    }
+    socketApiChat();
   }
 
   function deleteMessage(index) {
@@ -176,7 +149,6 @@ export function useOpenAi({ openSetting }) {
   return {
     scrollContainer,
     keyword,
-    isSocket,
     pending,
     deleteMessage,
     sendMessage,
