@@ -58,7 +58,7 @@ export function useOpenAi({ openSetting }) {
     chatList.value.push({ role: "assistant", content: waitLabel });
     const index = chatList.value.length - 1;
 
-    fetch(openAiInstance.value?.basePath + '/chat/completions', {
+    fetch(import.meta.env.VITE_API_DOMAIN + '/chat/completions', {
       method: "POST",
       body: JSON.stringify(params),
       headers: { "Content-Type": "application/json", Authorization },
