@@ -26,13 +26,18 @@
               让我们一起学习。智能助手由 AI 提供支持，因此可能出现意外和错误。
             </div>
 
-            <template v-for="item in chatList">
+            <template v-for="(item, index) in chatList">
               <div class="chat-list__item" v-if="item.role !== 'system'">
-                <div class="message-card animate__animated animate__bounceInUp"
+                <div class="message-card animate__animated animate__fadeInUp"
                   :class="{ 'is-right': item.role === 'user' }">
                   <section class="list-item__text">
                     <MarkdownIt :model-value="item.content"></MarkdownIt>
                   </section>
+                  <div class="extend-wrapper" v-if="!pending" @click.stop="deleteMessage(index)">
+                    <el-icon color="#F56C6C" size="18px">
+                      <CircleClose />
+                    </el-icon>
+                  </div>
                 </div>
               </div>
             </template>
@@ -41,7 +46,7 @@
       </el-auto-resizer>
     </div>
 
-    <div class="chat-enter animate__animated animate__bounceInUp">
+    <div class="chat-enter animate__animated animate__fadeInUp">
       <div class="clear-wrapper" :class="{ mini: isMiniClear }" @click="clearHandle">
         <div class="icon">
           <i-game-icons-magic-broom />
@@ -57,7 +62,6 @@
           :autosize="{ minRows: 1 }" v-model="keyword" @focus="focusHandle" @blur="blurHandle"
           @keydown.enter.prevent="sendMessage"></el-input>
       </div>
-
     </div>
 
     <div class="setting-button animate__animated animate__fadeInRight" @click="openSetting">
@@ -71,7 +75,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useOpenAi } from '@/hooks/useOpenAi'
-import { Setting } from '@element-plus/icons-vue'
+import { Setting, CircleClose } from '@element-plus/icons-vue'
 import { useModal } from '@/hooks/useModal'
 import { useSettingStore } from '@/store/setting'
 import { storeToRefs } from "pinia";
@@ -88,7 +92,9 @@ const { chatList } = storeToRefs(settingStore)
 const {
   scrollContainer,
   keyword,
-  sendMessage
+  pending,
+  deleteMessage,
+  sendMessage,
 } = useOpenAi({ openSetting })
 
 const isMiniClear = ref(false)
@@ -201,16 +207,40 @@ function blurHandle() {
   :deep(.chat-list__item) {
     margin-bottom: 20px;
 
+
     .message-card {
       width: max-content;
       padding: 10px 16px;
       border-radius: 8px;
     }
 
+    .extend-wrapper {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: max-content;
+      height: 24px;
+      padding: 0 8px;
+      transform: translateX(30px);
+      justify-content: center;
+      align-items: center;
+      display: none;
+      cursor: pointer;
+    }
+
+    &:hover .extend-wrapper {
+      display: flex;
+    }
+
     .is-right {
       color: #fff;
       margin-left: auto;
       background-image: linear-gradient(90deg, #2870EA 10.79%, #1B4AEF 87.08%);
+
+      .extend-wrapper {
+        left: 0;
+        transform: translateX(-30px);
+      }
     }
 
 
@@ -262,12 +292,13 @@ function blurHandle() {
 }
 
 .message-card {
+  position: relative;
   border-radius: 6px;
   text-align: left;
   outline: transparent solid 1px;
   padding: 20px;
   background-color: #fff;
-  max-width: 100%;
+  max-width: 90%;
   font-size: 16px;
   box-shadow: 0px 0.3px 0.9px rgba(0, 0, 0, 0.12), 0px 1.6px 3.6px rgba(0, 0, 0, 0.16);
 

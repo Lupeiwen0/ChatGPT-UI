@@ -31,16 +31,6 @@
 
           <el-alert title="导入/导出" type="success" :closable="false" />
           <el-form label-position="top">
-            <el-form-item label="导入对话记录 (文件格式必须和导出文件保持一致)">
-              <el-row style="width: 100%">
-                <!-- <el-col :span="11">
-                  <el-button style="width: 100%" plain type="primary">导入 MarkDown 文件</el-button>
-                </el-col> -->
-                <el-col :span="11">
-                  <el-button style="width: 100%" plain type="primary" @click="chooseJsonFile">导入 JSON 文件</el-button>
-                </el-col>
-              </el-row>
-            </el-form-item>
             <el-form-item label="导出对话记录">
               <el-row style="width: 100%">
                 <el-col :span="11">
@@ -50,6 +40,9 @@
                   <el-button style="width: 100%" type="primary" @click="downloadJsonHandle">导出为 JSON</el-button>
                 </el-col>
               </el-row>
+            </el-form-item>
+            <el-form-item label="导入对话记录 (文件格式必须和导出文件保持一致)">
+              <el-button style="width: 100%" plain type="primary" @click="chooseJsonFile">导入 JSON 文件</el-button>
             </el-form-item>
           </el-form>
         </el-scrollbar>

@@ -162,6 +162,10 @@ export function useOpenAi({ openSetting }) {
     }
   }
 
+  function deleteMessage(index) {
+    chatList.value.splice(index, 1)
+  }
+
   onMounted(() => {
     window.addEventListener('click', registerCopyHandel)
   })
@@ -173,6 +177,8 @@ export function useOpenAi({ openSetting }) {
     scrollContainer,
     keyword,
     isSocket,
+    pending,
+    deleteMessage,
     sendMessage,
   };
 }
