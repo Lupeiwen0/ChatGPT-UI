@@ -8,6 +8,11 @@
             <el-form-item label="Api-Key">
               <el-input placeholder="请输入Api-Key" show-password v-model.trim="apiKey" @blur="changeApiKey"></el-input>
             </el-form-item>
+            <el-form-item label="模型">
+              <el-select style="width: 100%" placeholder="选择模型" v-model="currentModel">
+                <el-option v-for="item in modelMap" :label="item.label" :value="item.value"></el-option>
+              </el-select>
+            </el-form-item>
           </el-form>
 
           <el-alert title="Prompt" type="success" :closable="false" />
@@ -24,10 +29,27 @@
             </el-form-item>
           </el-form>
 
-          <el-alert title="保存导出" type="success" :closable="false" />
+          <el-alert title="导入/导出" type="success" :closable="false" />
           <el-form label-position="top">
+            <el-form-item label="导入对话记录 (文件格式必须和导出文件保持一致)">
+              <el-row style="width: 100%">
+                <!-- <el-col :span="11">
+                  <el-button style="width: 100%" plain type="primary">导入 MarkDown 文件</el-button>
+                </el-col> -->
+                <el-col :span="11">
+                  <el-button style="width: 100%" plain type="primary" @click="chooseJsonFile">导入 JSON 文件</el-button>
+                </el-col>
+              </el-row>
+            </el-form-item>
             <el-form-item label="导出对话记录">
-              <el-button style="width: 100%" type="primary" @click="downloadHandle">导出为 MarkDown</el-button>
+              <el-row style="width: 100%">
+                <el-col :span="11">
+                  <el-button style="width: 100%" type="primary" @click="downloadMdHandle">导出为 MarkDown</el-button>
+                </el-col>
+                <el-col :span="11" :offset="1">
+                  <el-button style="width: 100%" type="primary" @click="downloadJsonHandle">导出为 JSON</el-button>
+                </el-col>
+              </el-row>
             </el-form-item>
           </el-form>
         </el-scrollbar>
@@ -41,11 +63,10 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia';
 import { useSettingStoreWithOut } from '@/store/setting';
 import zhCnPromptOptions from '@/prompt/zh-cn.json'
-import MarkdownIt from 'markdown-it'
-
+import { ElMessage } from 'element-plus';
 
 const settingStore = useSettingStoreWithOut()
-const { systemInfo, apiKey } = storeToRefs(settingStore)
+const { systemInfo, apiKey, modelMap, currentModel, chatList } = storeToRefs(settingStore)
 
 const drawerVisible = ref(true)
 
@@ -60,26 +81,69 @@ function changeApiKey() {
 }
 
 
-function downloadHandle() {
-  const messages = document.querySelectorAll('.markdown-it__wrapper') // 获取每一条对话信息的 DOM 节点
+function chooseJsonFile() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.multiple = false
+  input.onchange = (event) => {
+    const [file] = event.target.files
+    readFile(file)
+    input.remove()
+  }
+  input.click()
 
-  const markdown = []
-  messages.forEach(message => {
-    const md = MarkdownIt().render(message.textContent.trim()) // 使用 markdown-it 将文本内容转化为 markdown 格式
-    markdown.push(md)
-  })
+  function readFile(file) {
+    const reader = new FileReader(); // 创建 FileReader 对象
+    reader.onload = function (e) {
+      try {
+        const content = e.target.result; // 获取文件内容
+        const jsonData = JSON.parse(content); // 将内容解析为 JSON 对象
 
-  const content = markdown.join('\n\n') // 将每条消息转化的 markdown 内容拼接起来
+        settingStore.initChatList(jsonData)
+        ElMessage.success('导入成功')
+      } catch (err) {
+        ElMessage.success('导入失败')
+
+      }
+
+    }
+    reader.readAsText(file); // 以文本格式读取文件内容
+  }
+}
+
+
+
+
+
+// 导出Markdown
+function downloadMdHandle() {
+  // 生成 markdown 字符串
+  const messages = [systemInfo.value, ...chatList.value]
+  const markdown = messages.reduce((acc, item) => `${acc}> ${item.role}\n\n${item.content}\n\n`, '');
   const filename = `chat-history-${new Date().valueOf()}.md` // 保存文件的名称
+  const blob = new Blob([markdown], { type: 'text/markdown' }) // 将 markdown 文本转化为 Blob 对象
+  downloadFn(URL.createObjectURL(blob), filename)
+}
 
-  const blob = new Blob([content], { type: 'text/markdown' }) // 将 markdown 文本转化为 Blob 对象
+// 导出JSON
+function downloadJsonHandle() {
+  const messages = [systemInfo.value, ...chatList.value]
+  // 将 JSON 数据转换为字符串并创建 Blob 对象
+  const blob = new Blob([JSON.stringify(messages)], { type: "application/json" });
+  // 保存文件的名称
+  const filename = `chat-history-${new Date().valueOf()}.json`
+  downloadFn(URL.createObjectURL(blob), filename)
+}
+
+// 下载文件
+function downloadFn(href, fileName) {
   const link = document.createElement('a') // 创建下载链接
   link.style.display = 'none'
-  link.download = filename
-  link.href = URL.createObjectURL(blob)
+  link.download = fileName
+  link.href = href
   link.click() // 模拟点击下载链接
   link.remove
-
 }
 
 </script>

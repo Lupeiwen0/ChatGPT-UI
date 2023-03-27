@@ -72,27 +72,29 @@
 import { ref } from 'vue'
 import { useOpenAi } from '@/hooks/useOpenAi'
 import { Setting } from '@element-plus/icons-vue'
+import { useModal } from '@/hooks/useModal'
+import { useSettingStore } from '@/store/setting'
+import { storeToRefs } from "pinia";
 import MarkdownIt from './markdown-it.vue';
 import settingDrawer from './setting-drawer.vue';
-import { useModal } from '@/hooks/useModal'
-
-
 
 function openSetting() {
   useModal(settingDrawer)
 }
 
+const settingStore = useSettingStore()
+const { chatList } = storeToRefs(settingStore)
+
 const {
   scrollContainer,
   keyword,
-  chatList,
   sendMessage
 } = useOpenAi({ openSetting })
 
 const isMiniClear = ref(false)
 
 function clearHandle() {
-  chatList.value = chatList.value.filter(i => i.role === 'system')
+  chatList.value = []
 }
 
 function focusHandle() {

@@ -1,4 +1,4 @@
-import { ref, nextTick, onMounted, onBeforeMount } from "vue";
+import { ref, nextTick, onMounted, onBeforeMount, reactive } from "vue";
 import { throttle } from "lodash-es";
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from "element-plus";
@@ -6,10 +6,6 @@ import { useSettingStore } from '@/store/setting'
 import { storeToRefs } from "pinia";
 
 const waitLabel = "请稍等...";
-
-const modelMap = {
-  chat: "gpt-3.5-turbo",
-};
 
 async function registerCopyHandel(e) {
 
@@ -26,13 +22,12 @@ async function registerCopyHandel(e) {
 
 export function useOpenAi({ openSetting }) {
   const settingStore = useSettingStore()
-  const { openAiInstance, systemInfo, apiKey } = storeToRefs(settingStore)
+  const { openAiInstance, systemInfo, apiKey, currentModel, chatList } = storeToRefs(settingStore)
 
   const pending = ref(false);
   const scrollContainer = ref();
   const isSocket = ref(true);
   const keyword = ref("");
-  const chatList = ref([]);
 
   function checkAuth() {
     if (!openAiInstance.value && apiKey.value) {
@@ -49,7 +44,7 @@ export function useOpenAi({ openSetting }) {
     // 保留8组对话 避免tokens消耗过大,如需加大保留对话组，可更改下面 -17的值，当前计算方式为 -(8 * 2 + 1)
     const messages = chatList.value.slice(-17)
     return {
-      model: modelMap.chat,
+      model: currentModel.value,
       messages: [systemInfo.value, ...messages],
       stream: isSocket.value,
       top_p: 1
@@ -86,7 +81,7 @@ export function useOpenAi({ openSetting }) {
     const index = chatList.value.length - 1;
 
     const openAiHeaders = openAiInstance.value.configuration.baseOptions.headers;
-    fetch(openAiInstance.value.basePath + "/chat/completions", {
+    fetch(openAiInstance.value.basePath + '/chat/completions', {
       method: "POST",
       body: JSON.stringify(params),
       headers: {
@@ -178,7 +173,6 @@ export function useOpenAi({ openSetting }) {
     scrollContainer,
     keyword,
     isSocket,
-    chatList,
     sendMessage,
   };
 }
