@@ -30,7 +30,7 @@ const htmlStr = computed(() => mdStr2html(props.modelValue))
 
   .__code-block-copy-button__ {
     position: absolute;
-    top: 10px;
+    top: 3px;
     right: 10px;
     font-size: 12px;
     text-align: center;

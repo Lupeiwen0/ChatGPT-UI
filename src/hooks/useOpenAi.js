@@ -58,7 +58,7 @@ export function useOpenAi({ openSetting }) {
     chatList.value.push({ role: "assistant", content: waitLabel });
     const index = chatList.value.length - 1;
 
-    fetch(import.meta.env.VITE_API_DOMAIN + '/chat/completions', {
+    fetch(import.meta.env.VITE_API_DOMAIN + '/v1/chat/completions', {
       method: "POST",
       body: JSON.stringify(params),
       headers: { "Content-Type": "application/json", Authorization },
@@ -79,17 +79,22 @@ export function useOpenAi({ openSetting }) {
                 pending.value = false;
                 return;
               }
-              const result = JSON.parse(value);
-              if (isSocket.value) {
-                // 实时
-                const [content] = result.choices;
-                if (waitLabel === chatList.value[index].content) chatList.value[index].content = "";
-                chatList.value[index].content += content.delta?.content ?? "";
-              } else {
-                // 完整
-                const [messageInfo] = result.choices;
-                chatList.value[index].content = messageInfo.message.content;
-                pending.value = false;
+
+              try {
+                const result = JSON.parse(value);
+                if (isSocket.value) {
+                  // 实时
+                  const [content] = result.choices;
+                  if (waitLabel === chatList.value[index].content) chatList.value[index].content = "";
+                  chatList.value[index].content += content.delta?.content ?? "";
+                } else {
+                  // 完整
+                  const [messageInfo] = result.choices;
+                  chatList.value[index].content = messageInfo.message.content;
+                  pending.value = false;
+                }
+              } catch (err) {
+                console.log(err);
               }
               scrollBottom();
             });
