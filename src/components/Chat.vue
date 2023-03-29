@@ -59,7 +59,7 @@
           <i-ph-chat-circle-text-light />
         </div>
         <el-input type="textarea" placeholder="有问题尽管问我..." resize="none" maxlength="2000" show-word-limit
-          :autosize="{ minRows: 1 }" v-model="keyword" @focus="focusHandle" @blur="blurHandle"
+          :autosize="{ minRows: 1, maxRows: 8 }" v-model="keyword" @focus="focusHandle" @blur="blurHandle"
           @keydown.enter.prevent="sendMessage"></el-input>
       </div>
     </div>
@@ -117,7 +117,6 @@ function blurHandle() {
 .chat-container {
   display: flex;
   flex-direction: column;
-  min-width: 800px;
   max-width: 1200px;
   height: 100vh;
   overflow: hidden;
@@ -319,5 +318,44 @@ function blurHandle() {
   border-radius: 4px 0 0 4px;
   overflow: hidden;
   cursor: pointer;
+}
+
+@media (max-width: 750px) {
+
+  .chat-container {
+    padding: 30px 18px;
+  }
+
+  .chat-enter {
+    .clear-wrapper {
+      width: 48px;
+    }
+
+    :deep(.el-textarea__inner) {
+      padding-right: 11px !important;
+    }
+
+    :deep(.el-input__count) {
+      display: none;
+    }
+  }
+
+  .welcome-wrapper {
+    padding-top: 3vh;
+  }
+
+  .example-wrapper {
+    grid-template-columns: repeat(1, 1fr);
+
+    .message-card {
+      margin: 0 auto 20px;
+    }
+  }
+
+  :deep(.chat-list) {
+    .el-scrollbar__view {
+      padding-right: 0;
+    }
+  }
 }
 </style>

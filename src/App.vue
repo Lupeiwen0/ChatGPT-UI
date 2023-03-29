@@ -10,6 +10,10 @@ import Chat from '@/components/Chat.vue'
 </template>
 
 <style lang="scss">
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html,
 body,
 div,

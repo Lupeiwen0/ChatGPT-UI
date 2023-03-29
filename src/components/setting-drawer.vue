@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawerVisible" title="高级设置" direction="rtl" size="600px" class="drawer-wrapper">
+  <el-drawer v-model="drawerVisible" title="高级设置" direction="rtl" :size="drawerSize" class="drawer-wrapper">
     <el-auto-resizer>
       <template #default="{ height }">
         <el-scrollbar ref="scrollContainer" :height="height">
@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia';
 import { useSettingStoreWithOut } from '@/store/setting';
 import zhCnPromptOptions from '@/prompt/zh-cn.json'
@@ -62,6 +62,10 @@ const settingStore = useSettingStoreWithOut()
 const { systemInfo, apiKey, modelMap, currentModel, chatList } = storeToRefs(settingStore)
 
 const drawerVisible = ref(true)
+const drawerSize = computed(() => {
+  if (window.innerWidth > 750) return '500px'
+  return '100%'
+})
 
 const promptVal = ref('')
 function choosePrompt(val) {
@@ -72,7 +76,6 @@ function choosePrompt(val) {
 function changeApiKey() {
   settingStore.setApiKey(apiKey.value)
 }
-
 
 function chooseJsonFile() {
   const input = document.createElement('input')
@@ -104,10 +107,6 @@ function chooseJsonFile() {
     reader.readAsText(file); // 以文本格式读取文件内容
   }
 }
-
-
-
-
 
 // 导出Markdown
 function downloadMdHandle() {
