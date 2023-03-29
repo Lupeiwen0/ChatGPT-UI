@@ -95,7 +95,7 @@ const {
   pending,
   deleteMessage,
   sendMessage,
-} = useOpenAi({ openSetting })
+} = useOpenAi()
 
 const isMiniClear = ref(false)
 
