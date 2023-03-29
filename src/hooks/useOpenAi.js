@@ -20,13 +20,24 @@ async function registerCopyHandel(e) {
   }
 }
 
-export function useOpenAi() {
+export function useOpenAi({ openSetting }) {
   const settingStore = useSettingStore()
-  const { systemInfo, currentModel, chatList, isSocket } = storeToRefs(settingStore)
+  const { openAiInstance, systemInfo, apiKey, currentModel, chatList, isSocket } = storeToRefs(settingStore)
 
   const pending = ref(false);
   const scrollContainer = ref();
   const keyword = ref("");
+
+  function checkAuth() {
+    if (!openAiInstance.value && apiKey.value) {
+      settingStore.initChatAi()
+    } else if (!apiKey.value) {
+      ElMessage.warning('请先设置Api-Key')
+      openSetting()
+      return false
+    }
+    return true
+  }
 
   function buildParams() {
     // 保留8组对话 避免tokens消耗过大,如需加大保留对话组，可更改下面 -17的值，当前计算方式为 -(8 * 2 + 1)
@@ -41,6 +52,7 @@ export function useOpenAi() {
 
   function socketApiChat() {
     pending.value = true;
+    const Authorization = openAiInstance.value.configuration.baseOptions.headers.Authorization;
     const params = buildParams();
 
     chatList.value.push({ role: "assistant", content: waitLabel });
@@ -49,7 +61,7 @@ export function useOpenAi() {
     fetch(import.meta.env.VITE_API_DOMAIN + '/v1/chat/completions', {
       method: "POST",
       body: JSON.stringify(params),
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization },
     })
       .then((response) => {
         const stream = response.body;
@@ -111,7 +123,10 @@ export function useOpenAi() {
   }, 600);
 
   function sendMessage(event) {
+    if (!checkAuth()) return
+
     if (pending.value) return;
+
     if (event.shiftKey) {
       keyword.value += "\n";
       return;
