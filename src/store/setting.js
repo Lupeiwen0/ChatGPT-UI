@@ -26,6 +26,8 @@ export const useSettingStore = defineStore('setting', {
       role: 'system',
       content: '作为私人助理解决所提出的问题'
     },
+
+    fetchInstanceMap: []
   }),
   actions: {
     setApiKey(key = '') {
@@ -45,6 +47,16 @@ export const useSettingStore = defineStore('setting', {
         this.systemInfo.content = systemInfo.content
       }
       this.chatList = list.filter(i => i.role !== 'system')
+    },
+    clearMessage() {
+      this.chatList = []
+      this.removeFetchInstance()
+    },
+    removeFetchInstance() {
+      if (this.fetchInstanceMap.length) {
+        this.fetchInstanceMap.forEach(item => item.controller?.abort?.())
+        this.fetchInstanceMap = []
+      }
     }
   }
 });

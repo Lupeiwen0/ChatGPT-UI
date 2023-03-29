@@ -100,7 +100,8 @@ const {
 const isMiniClear = ref(false)
 
 function clearHandle() {
-  chatList.value = []
+  pending.value = false
+  settingStore.clearMessage()
 }
 
 function focusHandle() {

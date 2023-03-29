@@ -1,4 +1,4 @@
-import { ref, nextTick, onMounted, onBeforeMount } from "vue";
+import { ref, nextTick, onMounted, onBeforeMount, watch } from "vue";
 import { throttle } from "lodash-es";
 import { useClipboard } from '@vueuse/core'
 import { ElMessage } from "element-plus";
@@ -22,7 +22,7 @@ async function registerCopyHandel(e) {
 
 export function useOpenAi({ openSetting }) {
   const settingStore = useSettingStore()
-  const { openAiInstance, systemInfo, apiKey, currentModel, chatList, isSocket } = storeToRefs(settingStore)
+  const { openAiInstance, systemInfo, apiKey, currentModel, chatList, isSocket, fetchInstanceMap } = storeToRefs(settingStore)
 
   const pending = ref(false);
   const scrollContainer = ref();
@@ -58,10 +58,15 @@ export function useOpenAi({ openSetting }) {
     chatList.value.push({ role: "assistant", content: waitLabel });
     const index = chatList.value.length - 1;
 
+    const controller = new AbortController();
+    const signal = controller.signal;
+    fetchInstanceMap.value.push({ key: index, controller })
+
     fetch(import.meta.env.VITE_API_DOMAIN + '/v1/chat/completions', {
       method: "POST",
       body: JSON.stringify(params),
       headers: { "Content-Type": "application/json", Authorization },
+      signal
     })
       .then((response) => {
         const stream = response.body;
@@ -95,6 +100,7 @@ export function useOpenAi({ openSetting }) {
                 }
               } catch (err) {
                 console.log(err);
+                ElMessage.error('未知错误')
               }
               scrollBottom();
             });
@@ -105,8 +111,12 @@ export function useOpenAi({ openSetting }) {
         readStream();
       })
       .catch((error) => {
-        console.error("Connection error", error);
-        ElMessage.error('网络错误')
+        if (error.name === 'AbortError') {
+          console.log('请求已被取消');
+        } else {
+          console.error("Connection error", error);
+          ElMessage.error('网络错误')
+        }
         chatList.value[index].content = 'Error'
         pending.value = false;
       });
@@ -124,25 +134,29 @@ export function useOpenAi({ openSetting }) {
 
   function sendMessage(event) {
     if (!checkAuth()) return
-
     if (pending.value) return;
-
     if (event.shiftKey) {
-      keyword.value += "\n";
-      return;
+      keyword.value += '\n'
+      return
     }
-
     if (!keyword.value.trim()) return;
 
-    chatList.value.push({ role: "user", content: keyword.value });
-    keyword.value = "";
+    if (event.keyCode === 13) {
+      chatList.value.push({ role: "user", content: keyword.value });
+      keyword.value = "";
+      socketApiChat();
+    }
 
-    socketApiChat();
+
   }
 
   function deleteMessage(index) {
     chatList.value.splice(index, 1)
   }
+
+  watch(pending, val => {
+    if (!val) settingStore.removeFetchInstance()
+  })
 
   onMounted(() => {
     window.addEventListener('click', registerCopyHandel)
