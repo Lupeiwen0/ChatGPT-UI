@@ -25,7 +25,7 @@ const htmlStr = computed(() => mdStr2html(props.modelValue))
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   padding: 6px 10px;
-  overflow: hidden;
+  overflow: auto;
   font-size: 14px;
 
   .__code-block-copy-button__ {
