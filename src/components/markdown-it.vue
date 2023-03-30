@@ -18,19 +18,32 @@ const htmlStr = computed(() => mdStr2html(props.modelValue))
 </script>
 
 
+<style lang="scss">
+code {
+  display: inline-block;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.02);
+  font-size: 14px;
+  line-height: 18px;
+  padding: 6px 10px;
+}
+</style>
+
 <style lang="scss" scoped>
+.markdown-it__wrapper {
+  overflow: auto;
+}
+
 :deep(.hljs) {
   position: relative;
-  background-color: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 6px 10px;
-  overflow: auto;
-  font-size: 14px;
+  width: 100%;
+  overflow: hidden;
+
 
   .__code-block-copy-button__ {
     position: absolute;
-    top: 3px;
+    top: 6px;
     right: 10px;
     font-size: 12px;
     text-align: center;
@@ -42,6 +55,16 @@ const htmlStr = computed(() => mdStr2html(props.modelValue))
     cursor: pointer;
   }
 
+  code {
+    width: inherit;
+
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow-y: hidden;
+    overflow-x: auto;
+
+
+
+  }
 }
 
 :deep(table) {
@@ -57,6 +80,7 @@ const htmlStr = computed(() => mdStr2html(props.modelValue))
   /*使用单一线条的边框*/
   empty-cells: show;
   /*单元格无内容依旧绘制边框*/
+  overflow: auto;
 
 
   th,
@@ -87,7 +111,5 @@ const htmlStr = computed(() => mdStr2html(props.modelValue))
   tr:hover {
     background: #efefef;
   }
-
-
 }
 </style>
