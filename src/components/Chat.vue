@@ -58,9 +58,11 @@
         <div class="enter-icon">
           <i-ph-chat-circle-text-light />
         </div>
-        <el-input type="textarea" placeholder="有问题尽管问我..." resize="none" maxlength="2000" show-word-limit
-          :autosize="{ minRows: 1, maxRows: 8 }" v-model="keyword" @focus="focusHandle" @blur="blurHandle"
-          @keydown.enter.prevent="sendMessage"></el-input>
+        <el-input type="textarea" placeholder="有问题尽管问我..." resize="none" maxlength="2000" enterkeyhint="send"
+          autocorrect="off" show-word-limit :autosize="{ minRows: 1, maxRows: 8 }" v-model="keyword" @focus="focusHandle"
+          @blur="blurHandle" @keydown.enter.prevent="sendMessage"></el-input>
+
+        <div class="is-pending" v-show="pending"></div>
       </div>
     </div>
 
@@ -73,7 +75,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useWindowSize } from '@vueuse/core'
 import { useOpenAi } from '@/hooks/useOpenAi'
 import { Setting, CircleClose } from '@element-plus/icons-vue'
 import { useModal } from '@/hooks/useModal'
@@ -85,6 +88,11 @@ import settingDrawer from './setting-drawer.vue';
 function openSetting() {
   useModal(settingDrawer)
 }
+
+const { height } = useWindowSize()
+const clientHeight = computed(() => `${height.value}px`)
+console.log(clientHeight.value);
+
 
 const settingStore = useSettingStore()
 const { chatList } = storeToRefs(settingStore)
@@ -110,15 +118,24 @@ function focusHandle() {
 function blurHandle() {
   isMiniClear.value = false
 }
-
 </script>
 
 <style lang="scss" scoped>
+@keyframes pending-animation {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;
   max-width: 1200px;
-  height: 100vh;
+  height: v-bind(clientHeight);
   overflow: hidden;
   padding: 30px;
   margin: 0 auto;
@@ -167,11 +184,27 @@ function blurHandle() {
   }
 
   .enter-wrapper {
+    position: relative;
     flex: 1;
     padding: 9px 12px;
     border-radius: 24px !important;
     background-color: #fff;
     display: flex;
+    overflow: hidden;
+
+    .is-pending {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #2870EA 10.79%, #1B4AEF 87.08%);
+      opacity: 0.75;
+      animation-name: pending-animation;
+      animation-duration: 1.3s;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+    }
 
     .enter-icon {
       width: 24px;
@@ -186,6 +219,8 @@ function blurHandle() {
       background-color: transparent;
       padding-right: 80px;
       font-size: 16px;
+
+
     }
 
     :deep(.el-input__count) {
@@ -353,6 +388,8 @@ function blurHandle() {
   }
 
   :deep(.chat-list) {
+    margin-bottom: 20px;
+
     .el-scrollbar__view {
       padding-right: 0;
     }

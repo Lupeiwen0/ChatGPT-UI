@@ -144,6 +144,8 @@ export function useOpenAi({ openSetting }) {
     if (event.keyCode === 13) {
       chatList.value.push({ role: "user", content: keyword.value });
       keyword.value = "";
+      scrollBottom();
+
       socketApiChat();
     }
 
