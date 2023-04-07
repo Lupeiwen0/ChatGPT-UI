@@ -4,25 +4,25 @@
       <el-auto-resizer>
         <template #default="{ height }">
           <el-scrollbar ref="scrollContainer" :height="height">
-            <div class="welcome-wrapper animate__animated animate__bounceInDown">
+            <div class="welcome-wrapper">
               <span class="title">欢迎使用智能助手</span>
-              <span class="label">由 AI 支持的网页版 Copilot</span>
+              <span class="label animate__animated animate__bounceInDown">由 AI 支持的网页版 Copilot</span>
             </div>
-            <div class="example-wrapper animate__animated animate__bounceInDown">
-              <div class="item-wrapper">
+            <div class="example-wrapper ">
+              <div class="item-wrapper animate__animated animate__bounceInDown" style="animation-delay: .3s;">
                 <div class="title">🧐 提出复杂问题</div>
                 <div class="message-card">"我可以为我挑剔的只吃橙色食物的孩子做什么饭?"</div>
               </div>
-              <div class="item-wrapper">
+              <div class="item-wrapper animate__animated animate__bounceInDown" style="animation-delay: .5s;">
                 <div class="title">🙌 获取更好的答案</div>
                 <div class="message-card">"销量最高的 3 种宠物吸尘器有哪些优点和缺点?"</div>
               </div>
-              <div class="item-wrapper">
+              <div class="item-wrapper animate__animated animate__bounceInDown" style="animation-delay: .7s;">
                 <div class="title">🎨 获得创意灵感</div>
                 <div class="message-card">"以海盗的口吻写一首关于外太空鳄鱼的俳句?"</div>
               </div>
             </div>
-            <div class="tips-wrapper animate__animated animate__bounceInDown">
+            <div class="tips-wrapper animate__animated animate__bounceInUp" style="animation-delay: .9s;">
               让我们一起学习。智能助手由 AI 提供支持，因此可能出现意外和错误。
             </div>
 
@@ -91,8 +91,6 @@ function openSetting() {
 
 const { height } = useWindowSize()
 const clientHeight = computed(() => `${height.value}px`)
-console.log(clientHeight.value);
-
 
 const settingStore = useSettingStore()
 const { chatList } = storeToRefs(settingStore)
@@ -128,6 +126,18 @@ function blurHandle() {
 
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes blend-animation {
+  0% {
+    letter-spacing: -30px;
+    filter: blur(10px);
+  }
+
+  100% {
+    letter-spacing: 0px;
+    filter: blur(0px);
   }
 }
 
@@ -291,12 +301,16 @@ function blurHandle() {
   flex-direction: column;
   align-items: center;
   padding-top: 12vh;
+  filter: contrast(30);
 
   .title {
     color: #111;
     font-weight: 600;
     font-size: 36px;
     margin-bottom: 12px;
+    animation-name: blend-animation;
+    animation-duration: .9s;
+    animation-timing-function: ease-in-out;
   }
 
   .label {

@@ -136,7 +136,12 @@ export function useOpenAi({ openSetting }) {
     if (!checkAuth()) return
     if (pending.value) return;
     if (event.shiftKey) {
-      keyword.value += '\n'
+      const el = event.srcElement
+      const index = el.selectionStart
+      keyword.value = keyword.value.substr(0, index) + '\n' + keyword.value.substr(index);
+      nextTick(() => {
+        el.setSelectionRange(keyword.value.length, index + 1)
+      })
       return
     }
     if (!keyword.value.trim()) return;
